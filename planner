@@ -2,6 +2,9 @@
 import argparse
 import json
 
+# Path to the tasks.json file
+TASKS_JSON_PATH = '/PATH/TO/tasks.json' # Change This!!!
+
 # Create argument parser
 parser = argparse.ArgumentParser(description="Simple Planner For The CLI")
 
@@ -36,7 +39,7 @@ edit_parser.add_argument("task", type=str, nargs="?", help="The new task descrip
 args = parser.parse_args()
 
 def read_Json():
-    with open('/Users/henrybarnes/Documents/GIT/TidyTask/tasks.json', 'r') as f:
+    with open(TASKS_JSON_PATH, 'r') as f:
         data = json.load(f) 
         return data
     
@@ -44,9 +47,8 @@ def add_task(task):
     tasks = read_Json()
     new_id = str(len(tasks) + 1)
     tasks[new_id] = {"task": task, "done": False}  # Add the new task with a new id
-    with open('/Users/henrybarnes/Documents/GIT/TidyTask/tasks.json', 'w') as f:
+    with open(TASKS_JSON_PATH, 'w') as f:
         json.dump(tasks, f, indent=4)  # Dump the dictionary as is
-        f.close()
 
 def view_tasks(taskID=None):
     tasks = read_Json()
@@ -74,7 +76,7 @@ def edit_task(taskID, task):
     if str(taskID) in tasks:
         tasks[str(taskID)]["task"] = task
         print(f"Task {taskID} edited!")
-        with open('/Users/henrybarnes/Documents/GIT/TidyTask/tasks.json', 'w') as f:
+        with open(TASKS_JSON_PATH, 'w') as f:
             json.dump(tasks, f, indent=4)
     else:
         print(f"Task {taskID} not found!")
@@ -90,7 +92,7 @@ def delete_task(taskID):
         for i, (key, value) in enumerate(sorted(tasks.items(), key=lambda x: int(x[0]))):
             new_tasks[str(i+1)] = value  # Re-assign new ids starting from 1
 
-        with open('/Users/henrybarnes/Documents/GIT/TidyTask/tasks.json', 'w') as f:
+        with open(TASKS_JSON_PATH, 'w') as f:
             json.dump(new_tasks, f, indent=4)
     else:
         print(f"Task {taskID} not found!")
@@ -100,18 +102,18 @@ def mark_task_done(taskID):
     if str(taskID) in tasks and tasks[str(taskID)]["done"] == False:
         tasks[str(taskID)]["done"] = True
         print(f"Task {taskID} marked as done!")
-        with open('/Users/henrybarnes/Documents/GIT/TidyTask/tasks.json', 'w') as f:
+        with open(TASKS_JSON_PATH, 'w') as f:
             json.dump(tasks, f, indent=4)
     elif str(taskID) in tasks and tasks[str(taskID)]["done"] == True:
         tasks[str(taskID)]["done"] = False
         print(f"Task {taskID} marked as incomplete!")
-        with open('/Users/henrybarnes/Documents/GIT/TidyTask/tasks.json', 'w') as f:
+        with open(TASKS_JSON_PATH, 'w') as f:
             json.dump(tasks, f, indent=4)
     else:
         print(f"Task {taskID} not found!")
         
 def clear():
-    with open('/Users/henrybarnes/Documents/GIT/TidyTask/tasks.json', 'w') as f:
+    with open(TASKS_JSON_PATH, 'w') as f:
         json.dump({}, f, indent=4)
         
 # Handle commands
