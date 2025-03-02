@@ -1,10 +1,14 @@
 
 # Tidy Task
-This script provides a command-line interface (CLI) for managing tasks. You can add, view, edit, mark as done, delete, and clear tasks. All tasks are stored in a `tasks.json` file, located in the specified path. You will need to change this in the script!!
+This script provides a command-line interface (CLI) for managing tasks. You can add, view, edit, mark as done, delete, and clear tasks. All tasks are stored in a `tasks.json` file, located in the specified path. You will need to change this in the script!! 
+
+I made this project out of necessity, i needed an easy way to have a basic to do list that I could reference from anywhere on my system. I thought it could be a fun project to make. In the future, I may add support for multiple to-do lists, but that's only if I have time, and feel the project needs it after using it for a while. 
+
+The docs *should* work for setting it up as a command 'planner'. If it doesn't work, let me know and I'll try to fix it
 
 This is a MacOS and Linux tool for the minute. I will potentially add Windows support in the future. (If I get around to it) 
 
-Thank you for checking out my project!! :)
+Thank you for checking out my (small) project!! :)
 
 ## Requirements
 -   Python 3.x
@@ -30,11 +34,13 @@ Thank you for checking out my project!! :)
 ## Setup
 ### Step One: Clone the Repository
 Clone the repository to your local machine using Git:
+
 `git clone https://github.com/Hhenry443/TidyTask.git` 
 ### Step Two: Make the Script Executable
 You need to give the  `planner` file permission to be executed as a script.
 
 Run this command in your terminal:
+
 `chmod +x /path/to/TidyTask/planner` 
 
 Make sure to replace  `/path/to/TidyTask`  with the actual path where you've cloned the repository.
@@ -43,13 +49,17 @@ Make sure to replace  `/path/to/TidyTask`  with the actual path where you've clo
 To make the script easily accessible from anywhere, add the directory containing the script to your system's  `PATH`. This way, you can run it without needing to navigate to the directory where the script is located.
 
 Run the following command in your terminal:
+
 `echo 'export PATH="/path/to/TidyTask:$PATH"' >> ~/.bashrc` 
 
 For users with  `zsh`  (the default shell for macOS), use this instead:
+
 `echo 'export PATH="/path/to/TidyTask:$PATH"' >> ~/.zshrc` 
 
 Afterwards, apply the changes by running:
+
 `source ~/.bashrc  # For bash users`
+
 
 `source ~/.zshrc   # For zsh users`
 ### Step Four: Run it as a Command
@@ -70,65 +80,78 @@ Where  `{add, done, view, edit, delete, clear}`  are the available subcommands.
 #### `add`
 
 Add a new task to the task list.
+
 `planner add "Task description"` 
 
 Example:
+
 `planner add "Complete the project"` 
 
 #### `done`
 
 Mark a task as done (or mark it as incomplete).
+
 `planner done TASK_ID` 
 
 Where  `TASK_ID`  is the ID of the task to mark as done.
 
 Example:
+
 `planner done 1` 
 
 #### `view`
 
 View tasks. If no task ID is specified, all tasks will be displayed.
+
 `planner view [TASK_ID]` 
 
 Where  `TASK_ID`  is the ID of the task to view. If omitted, all tasks will be displayed.
 
 Example:
-`planner view
-planner view 2` 
+
+`planner view` 
+
+`planner view 2` 
 
 #### `edit`
 
 Edit a task's description.
+
 `planner edit TASK_ID "New task description"` 
 
 Where  `TASK_ID`  is the ID of the task to edit.
 
 Example:
+
 `planner edit 1 "Updated task description"` 
 
 #### `delete`
 
 Delete a task by its ID.
+
 `planner delete TASK_ID` 
 
 Where  `TASK_ID`  is the ID of the task to delete.
 
 Example:
+
 `planner delete 2` 
 
 #### `clear`
 Clear all tasks in the planner. Requires confirmation.
+
 `planner clear` 
 
 This will ask for confirmation before clearing the task list. Type  `Y`  to confirm.
 ## File Structure
 
-The task data is stored in a JSON file located at  `/Users/henrybarnes/Documents/GIT/TidyTask/tasks.json`. Each task is represented by a dictionary with the following keys:
+The task data is stored in a JSON file located at  `tasks.json`. Each task is represented by a dictionary with the following keys:
 
 -   **task**: The description of the task.
 -   **done**: A boolean value indicating whether the task is completed.
 
 Example content of  `tasks.json`:
+
 `{
     "1": {
         "task": "Complete the project",
