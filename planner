@@ -1,0 +1,149 @@
+#!/usr/bin/env python3
+import argparse
+import json
+
+# Create argument parser
+parser = argparse.ArgumentParser(description="Simple Planner For The CLI")
+
+# Define subcommands
+subparsers = parser.add_subparsers(dest="command", required=False)
+
+# Add task command
+add_parser = subparsers.add_parser("add", help="Add a new task")
+add_parser.add_argument("task", type=str, help="The task description")
+
+# Mark task as done command
+done_parser = subparsers.add_parser("done", help="Mark a task as done")
+done_parser.add_argument("task_id", type=int, help="Task ID to mark as done")
+
+# Delete task command
+delete_parser = subparsers.add_parser("delete", help="Delete a task")
+delete_parser.add_argument("task_id", type=int, help="Task ID to delete")
+
+# View task command
+view_parser = subparsers.add_parser("view", help="View all tasks, or a specific task")
+view_parser.add_argument("task_id", type=int, nargs="?", help="Task ID to view (optional)")
+
+# Clear command
+clear_parser = subparsers.add_parser("clear", help="Clear all tasks")
+
+# Edit a task command
+edit_parser = subparsers.add_parser("edit", help="Edit a task")
+edit_parser.add_argument("task_id", type=int, help="Task ID to edit")
+edit_parser.add_argument("task", type=str, nargs="?", help="The new task description (optional)")
+
+# Parse arguments
+args = parser.parse_args()
+
+def read_Json():
+    with open('/Users/henrybarnes/Documents/GIT/TidyTask/tasks.json', 'r') as f:
+        data = json.load(f) 
+        return data
+    
+def add_task(task):
+    tasks = read_Json()
+    new_id = str(len(tasks) + 1)
+    tasks[new_id] = {"task": task, "done": False}  # Add the new task with a new id
+    with open('/Users/henrybarnes/Documents/GIT/TidyTask/tasks.json', 'w') as f:
+        json.dump(tasks, f, indent=4)  # Dump the dictionary as is
+        f.close()
+
+def view_tasks(taskID=None):
+    tasks = read_Json()
+    
+    if taskID is not None:
+        if str(taskID) in tasks:
+            task = tasks[str(taskID)]
+            # Print task with strikethrough if it's done
+            if task["done"]:
+                print(f"\033[9m{taskID}. {task['task']}\033[0m")  # Strikethrough
+            else:
+                print(f"{taskID}. {task['task']}")
+        else:
+            print(f"Task {taskID} not found!")
+    else:
+        for key, value in tasks.items():
+            # Print task with strikethrough if it's done
+            if value["done"]:
+                print(f"\033[9m{key}. {value['task']}\033[0m")  # Strikethrough
+            else:
+                print(f"{key}. {value['task']}")
+
+def edit_task(taskID, task):
+    tasks = read_Json()
+    if str(taskID) in tasks:
+        tasks[str(taskID)]["task"] = task
+        print(f"Task {taskID} edited!")
+        with open('/Users/henrybarnes/Documents/GIT/TidyTask/tasks.json', 'w') as f:
+            json.dump(tasks, f, indent=4)
+    else:
+        print(f"Task {taskID} not found!")
+        
+def delete_task(taskID):
+    tasks = read_Json()
+    if str(taskID) in tasks:
+        del tasks[str(taskID)]
+        print(f"Task {taskID} deleted!")
+        
+        # Re-shift the task IDs
+        new_tasks = {}
+        for i, (key, value) in enumerate(sorted(tasks.items(), key=lambda x: int(x[0]))):
+            new_tasks[str(i+1)] = value  # Re-assign new ids starting from 1
+
+        with open('/Users/henrybarnes/Documents/GIT/TidyTask/tasks.json', 'w') as f:
+            json.dump(new_tasks, f, indent=4)
+    else:
+        print(f"Task {taskID} not found!")
+
+def mark_task_done(taskID):
+    tasks = read_Json()
+    if str(taskID) in tasks and tasks[str(taskID)]["done"] == False:
+        tasks[str(taskID)]["done"] = True
+        print(f"Task {taskID} marked as done!")
+        with open('/Users/henrybarnes/Documents/GIT/TidyTask/tasks.json', 'w') as f:
+            json.dump(tasks, f, indent=4)
+    elif str(taskID) in tasks and tasks[str(taskID)]["done"] == True:
+        tasks[str(taskID)]["done"] = False
+        print(f"Task {taskID} marked as incomplete!")
+        with open('/Users/henrybarnes/Documents/GIT/TidyTask/tasks.json', 'w') as f:
+            json.dump(tasks, f, indent=4)
+    else:
+        print(f"Task {taskID} not found!")
+        
+def clear():
+    with open('/Users/henrybarnes/Documents/GIT/TidyTask/tasks.json', 'w') as f:
+        json.dump({}, f, indent=4)
+        
+# Handle commands
+if args.command == "add":
+    print(f"Adding task: {args.task}")
+    add_task(args.task)
+elif args.command == "done":
+    print(f"Marking task {args.task_id} as done")
+    mark_task_done(args.task_id)
+elif args.command == "view":
+    if args.task_id:
+        print(f"Viewing task {args.task_id}")
+        view_tasks(args.task_id)
+    else:
+        print("Viewing all tasks")
+        view_tasks()
+elif args.command == "edit":
+    print(f"Editing task {args.task_id}")
+    if args.task:
+        edit_task(args.task_id, args.task)
+    else:
+        edit_task(args.task_id)
+elif args.command == "delete":
+    print(f"Deleting task {args.task_id}")
+    delete_task(args.task_id)
+elif args.command == "clear":
+    print(f"Clearing Planner.")
+    failsafe = input("Are you sure? Y/n: ")
+    if failsafe != "Y":
+        print("Aborting...")
+    else:
+        clear()
+else:
+    print("Here are your current tasks:")
+    view_tasks()
