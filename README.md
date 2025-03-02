@@ -2,7 +2,7 @@
 # Tidy Task
 This script provides a command-line interface (CLI) for managing tasks. You can add, view, edit, mark as done, delete, and clear tasks. All tasks are stored in a `tasks.json` file, located in the specified path. You will need to change this in the script!! 
 
-I made this project out of necessity, i needed an easy way to have a basic to do list that I could reference from anywhere on my system. I thought it could be a fun project to make. In the future, I may add support for multiple to-do lists, but that's only if I have time, and feel the project needs it after using it for a while. 
+I made this project out of necessity, I needed an easy way to have a basic to do list that I could reference from anywhere on my system. I then thought it could be a fun project to make!!! In the future, I may add support for multiple to-do lists, but that's only if I have time, and feel the project needs it after using it for a while. 
 
 The docs *should* work for setting it up as a command 'planner'. If it doesn't work, let me know and I'll try to fix it
 
