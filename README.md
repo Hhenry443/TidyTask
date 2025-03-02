@@ -2,6 +2,10 @@
 # Tidy Task
 This script provides a command-line interface (CLI) for managing tasks. You can add, view, edit, mark as done, delete, and clear tasks. All tasks are stored in a `tasks.json` file, located in the specified path. You will need to change this in the script!!
 
+This is a MacOS and Linux tool for the minute. I will potentially add Windows support in the future. (If I get around to it) 
+
+Thank you for checking out my project!! :)
+
 ## Requirements
 -   Python 3.x
 -   The  `argparse`  and  `json`  libraries (both come with Python by default).
