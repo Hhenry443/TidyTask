@@ -28,10 +28,10 @@ This script provides a command-line interface (CLI) for managing tasks. You can 
 Clone the repository to your local machine using Git:
 `git clone https://github.com/Hhenry443/TidyTask.git` 
 ### Step Two: Make the Script Executable
-You need to give the  `planner.py`  file permission to be executed as a script.
+You need to give the  `planner` file permission to be executed as a script.
 
 Run this command in your terminal:
-`chmod +x /path/to/TidyTask/planner.py` 
+`chmod +x /path/to/TidyTask/planner` 
 
 Make sure to replace  `/path/to/TidyTask`  with the actual path where you've cloned the repository.
 
@@ -66,54 +66,88 @@ Where  `{add, done, view, edit, delete, clear}`  are the available subcommands.
 #### `add`
 
 Add a new task to the task list.
-`python planner.py add "Task description"` 
+`planner add "Task description"` 
 
 Example:
-`python planner.py add "Complete the project"` 
+`planner add "Complete the project"` 
 
 #### `done`
 
 Mark a task as done (or mark it as incomplete).
-`python planner.py done TASK_ID` 
+`planner done TASK_ID` 
 
 Where  `TASK_ID`  is the ID of the task to mark as done.
 
 Example:
-`python planner.py done 1` 
+`planner done 1` 
 
 #### `view`
 
 View tasks. If no task ID is specified, all tasks will be displayed.
-`python planner.py view [TASK_ID]` 
+`planner view [TASK_ID]` 
 
 Where  `TASK_ID`  is the ID of the task to view. If omitted, all tasks will be displayed.
 
 Example:
-`python planner.py view
-python planner.py view 2` 
+`planner view
+planner view 2` 
 
 #### `edit`
 
 Edit a task's description.
-`python planner.py edit TASK_ID "New task description"` 
+`planner edit TASK_ID "New task description"` 
 
 Where  `TASK_ID`  is the ID of the task to edit.
 
 Example:
-`python planner.py edit 1 "Updated task description"` 
+`planner edit 1 "Updated task description"` 
 
 #### `delete`
 
 Delete a task by its ID.
-`python planner.py delete TASK_ID` 
+`planner delete TASK_ID` 
 
 Where  `TASK_ID`  is the ID of the task to delete.
 
 Example:
-`python planner.py delete 2` 
+`planner delete 2` 
 
 #### `clear`
 Clear all tasks in the planner. Requires confirmation.
-`python planner.py clear` 
+`planner clear` 
 
 This will ask for confirmation before clearing the task list. Type  `Y`  to confirm.
+## File Structure
+
+The task data is stored in a JSON file located at  `/Users/henrybarnes/Documents/GIT/TidyTask/tasks.json`. Each task is represented by a dictionary with the following keys:
+
+-   **task**: The description of the task.
+-   **done**: A boolean value indicating whether the task is completed.
+
+Example content of  `tasks.json`:
+`{
+    "1": {
+        "task": "Complete the project",
+        "done": false
+    },
+    "2": {
+        "task": "Buy groceries",
+        "done": true
+    }
+} `
+
+## Functions
+
+-   **read_Json()**: Reads the tasks from  `tasks.json`  and returns the data as a dictionary.
+-   **add_task(task)**: Adds a new task to the task list.
+-   **view_tasks(taskID=None)**: Views all tasks or a specific task by  `taskID`.
+-   **edit_task(taskID, task)**: Edits the description of an existing task.
+-   **delete_task(taskID)**: Deletes a task by its ID and reshuffles remaining tasks' IDs.
+-   **mark_task_done(taskID)**: Marks a task as done or toggles it between done and incomplete.
+-   **clear()**: Clears all tasks from the planner.
+
+## Notes
+
+-   Task IDs are assigned incrementally, starting from 1.
+-   The  `clear`  command asks for confirmation before deleting all tasks.
+-   All commands that modify the tasks (`add`,  `edit`,  `delete`,  `done`) update the  `tasks.json`  file immediately.
