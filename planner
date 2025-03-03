@@ -4,7 +4,7 @@ import json
 import os
 
 # Default tasks.json location
-DEFAULT_DIR = os.path.expanduser("~/DEFAULT/PATH/TO/")
+DEFAULT_DIR = os.path.expanduser("~/Documents/GIT/TidyTask/")
 DEFAULT_FILE = os.path.join(DEFAULT_DIR, "tasks.json")
 
 # Argument parser
