@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
 import argparse
 import json
+import os
 
-# Path to the tasks.json file
-TASKS_JSON_PATH = '/PATH/TO/tasks.json' # Change This!!!
+# Default tasks.json location
+DEFAULT_DIR = os.path.expanduser("~/DEFAULT/PATH/TO/")
+DEFAULT_FILE = os.path.join(DEFAULT_DIR, "tasks.json")
 
-# Create argument parser
+# Argument parser
 parser = argparse.ArgumentParser(description="Simple Planner For The CLI")
+parser.add_argument("-f", nargs="?", const="tasks.json", help="Path to a custom tasks.json file. If you want the global task list, put global")
 
 # Define subcommands
 subparsers = parser.add_subparsers(dest="command", required=False)
@@ -27,7 +30,7 @@ delete_parser.add_argument("task_id", type=int, help="Task ID to delete")
 view_parser = subparsers.add_parser("view", help="View all tasks, or a specific task")
 view_parser.add_argument("task_id", type=int, nargs="?", help="Task ID to view (optional)")
 
-# Clear command
+# Clear all tasks command
 clear_parser = subparsers.add_parser("clear", help="Clear all tasks")
 
 # Edit a task command
@@ -38,84 +41,107 @@ edit_parser.add_argument("task", type=str, nargs="?", help="The new task descrip
 # Parse arguments
 args = parser.parse_args()
 
-def read_Json():
-    with open(TASKS_JSON_PATH, 'r') as f:
-        data = json.load(f) 
-        return data
-    
+# Determine the correct file path
+if args.f is None:
+    # No -f flag used, store in current directory
+    TASKS_JSON_PATH = os.path.abspath("tasks.json")
+elif args.f == "global":
+    # -f global used, store in default directory
+    TASKS_JSON_PATH = DEFAULT_FILE
+else:
+    # -f with a specific path
+    TASKS_JSON_PATH = os.path.abspath(os.path.expanduser(args.f))
+
+
+# Ensure directory exists if using default
+if TASKS_JSON_PATH.startswith(DEFAULT_DIR) and not os.path.exists(DEFAULT_DIR):
+    os.makedirs(DEFAULT_DIR)
+
+# Ensure tasks.json exists
+if not os.path.exists(TASKS_JSON_PATH):
+    with open(TASKS_JSON_PATH, "w") as f:
+        json.dump({}, f, indent=4)
+
+def read_json(file_path=TASKS_JSON_PATH):
+    if not os.path.exists(file_path):
+        return {}
+
+    with open(file_path, "r") as f:
+        try:
+            data = json.load(f)
+            if not isinstance(data, dict):  # Ensure it's a dictionary
+                return {}
+            return data
+        except json.JSONDecodeError:
+            return {}  # If the file is empty or corrupt, return an empty dict
+
+def write_json(tasks):
+    with open(TASKS_JSON_PATH, "w") as f:
+        json.dump(tasks, f, indent=4)
+
 def add_task(task):
-    tasks = read_Json()
+    tasks = read_json()
+    
+    # Ensure keys are strings
     new_id = str(len(tasks) + 1)
-    tasks[new_id] = {"task": task, "done": False}  # Add the new task with a new id
-    with open(TASKS_JSON_PATH, 'w') as f:
-        json.dump(tasks, f, indent=4)  # Dump the dictionary as is
+    tasks[new_id] = {"task": task, "done": False}
+    
+    write_json(tasks)
+    print(f"Added task: {task}")
 
 def view_tasks(taskID=None):
-    tasks = read_Json()
-    
+    tasks = read_json()
     if taskID is not None:
-        if str(taskID) in tasks:
-            task = tasks[str(taskID)]
-            # Print task with strikethrough if it's done
-            if task["done"]:
-                print(f"\033[9m{taskID}. {task['task']}\033[0m")  # Strikethrough
-            else:
-                print(f"{taskID}. {task['task']}")
+        taskID = str(taskID)
+        if taskID in tasks:
+            task = tasks[taskID]
+            status = "\033[9m" if task["done"] else ""
+            print(f"{status}{taskID}. {task['task']}\033[0m")
         else:
             print(f"Task {taskID} not found!")
     else:
         for key, value in tasks.items():
-            # Print task with strikethrough if it's done
-            if value["done"]:
-                print(f"\033[9m{key}. {value['task']}\033[0m")  # Strikethrough
-            else:
-                print(f"{key}. {value['task']}")
+            status = "\033[9m" if value["done"] else ""
+            print(f"{status}{key}. {value['task']}\033[0m")
 
 def edit_task(taskID, task):
-    tasks = read_Json()
-    if str(taskID) in tasks:
-        tasks[str(taskID)]["task"] = task
+    tasks = read_json()
+    taskID = str(taskID)
+    if taskID in tasks:
+        tasks[taskID]["task"] = task
+        write_json(tasks)
         print(f"Task {taskID} edited!")
-        with open(TASKS_JSON_PATH, 'w') as f:
-            json.dump(tasks, f, indent=4)
     else:
         print(f"Task {taskID} not found!")
-        
-def delete_task(taskID):
-    tasks = read_Json()
-    if str(taskID) in tasks:
-        del tasks[str(taskID)]
-        print(f"Task {taskID} deleted!")
-        
-        # Re-shift the task IDs
-        new_tasks = {}
-        for i, (key, value) in enumerate(sorted(tasks.items(), key=lambda x: int(x[0]))):
-            new_tasks[str(i+1)] = value  # Re-assign new ids starting from 1
 
-        with open(TASKS_JSON_PATH, 'w') as f:
-            json.dump(new_tasks, f, indent=4)
+def delete_task(taskID):
+    tasks = read_json()
+    taskID = str(taskID)
+    if taskID in tasks:
+        del tasks[taskID]
+        print(f"Task {taskID} deleted!")
+
+        # Re-index tasks
+        new_tasks = {str(i+1): value for i, value in enumerate(tasks.values())}
+        write_json(new_tasks)
     else:
         print(f"Task {taskID} not found!")
 
 def mark_task_done(taskID):
-    tasks = read_Json()
-    if str(taskID) in tasks and tasks[str(taskID)]["done"] == False:
-        tasks[str(taskID)]["done"] = True
-        print(f"Task {taskID} marked as done!")
-        with open(TASKS_JSON_PATH, 'w') as f:
-            json.dump(tasks, f, indent=4)
-    elif str(taskID) in tasks and tasks[str(taskID)]["done"] == True:
-        tasks[str(taskID)]["done"] = False
-        print(f"Task {taskID} marked as incomplete!")
-        with open(TASKS_JSON_PATH, 'w') as f:
-            json.dump(tasks, f, indent=4)
+    tasks = read_json()
+    taskID = str(taskID)
+    if taskID in tasks:
+        tasks[taskID]["done"] = not tasks[taskID]["done"]
+        status = "done" if tasks[taskID]["done"] else "incomplete"
+        print(f"Task {taskID} marked as {status}!")
+        write_json(tasks)
     else:
         print(f"Task {taskID} not found!")
-        
-def clear():
-    with open(TASKS_JSON_PATH, 'w') as f:
-        json.dump({}, f, indent=4)
-        
+
+def clear_tasks():
+    write_json({})
+    print("All tasks cleared!")
+
 # Handle commands
 if args.command == "add":
     print(f"Adding task: {args.task}")
@@ -124,28 +150,22 @@ elif args.command == "done":
     print(f"Marking task {args.task_id} as done")
     mark_task_done(args.task_id)
 elif args.command == "view":
-    if args.task_id:
-        print(f"Viewing task {args.task_id}")
-        view_tasks(args.task_id)
-    else:
-        print("Viewing all tasks")
-        view_tasks()
+    print(f"Viewing {'task ' + str(args.task_id) if args.task_id else 'all tasks'}")
+    view_tasks(args.task_id)
 elif args.command == "edit":
-    print(f"Editing task {args.task_id}")
     if args.task:
+        print(f"Editing task {args.task_id}")
         edit_task(args.task_id, args.task)
     else:
-        edit_task(args.task_id)
+        print("Task description is required to edit a task.")
 elif args.command == "delete":
     print(f"Deleting task {args.task_id}")
     delete_task(args.task_id)
 elif args.command == "clear":
-    print(f"Clearing Planner.")
-    failsafe = input("Are you sure? Y/n: ")
-    if failsafe != "Y":
-        print("Aborting...")
+    if input("Are you sure? Y/n: ").strip().lower() == "y":
+        clear_tasks()
     else:
-        clear()
+        print("Aborting...")
 else:
     print("Here are your current tasks:")
     view_tasks()
